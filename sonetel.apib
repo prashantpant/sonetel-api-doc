@@ -1,0 +1,1282 @@
+FORMAT: 1A
+HOST: https://api.sonetel.com/
+
+# Sonetel
+
+The Sonetel API is a REST based web-service that enables you to manage your Sonetel account from your own platform or service. You can manage your account, your phone numbers and view the phone numbers available for ordering etc.
+The Sonetel API is a powerful tool that enables you to integrate your business processes with the Sonetel phone system.
+
+The current version of the API supports the following.
+
+* Create sub-accounts (Sonetel company accounts) under your main account
+* Manage users
+* Buy and manage phone numbers
+* Manage Voice apps
+* Download usage records
+
+# Technical overview
+The Sonetel API is based on REST principles.
+
+The API base URL is https://api.sonetel.com/. It supports Create, Retrieve, Update, Delete (CRUD) operations on Sonetel resources over Https. Http is not supported to ensure that the API is secure.
+
+To get started, you need to [sign up](http://sonetel.com/en/html/tryfree/try-free.shtml) for a Sonetel account.
+
+The API can be enabled or disabled by requesting Sonetel support. Once the API is enabled, you can view and manage your API settings in of Sonetel account from the web interface. Your account_id and API secret key are your API credentials that are needed to access your account resources and are available and managed from within your Sonetel account.
+
+Sonetel API follows HTTP BASIC authentication.
+
+The API uses JSON (JavaScript object notation) for resource representations.
+
+
+# General Notes
+## API structure
+The Sonetel API uses HTTP methods to perform the operations in-line with the general approach used for REST based APIs.
+
+The API credentials are used to authorize and authenticate the entity invoking the API to grant privilege to perform the operation.
+
+## Operations
+### CREATE
+You can create a resource using HTTP POST method. The content of the HTTP POST is in JSON. The response to an HTTP POST in a successful create operation is an HTTP 200 OK with the resource representation in JSON format
+
+### FETCH
+You can fetch a resource or their list using HTTP GET method. Filters can be applied using query string parameters to narrow down the results. The response to a HTTP GET in a successful Fetch operation is the HTTP 200 OK with the resource representation in JSON format
+
+### UPDATE
+You can update a resource using HTTP PUT method. The content of the HTTP PUT is in JSON. The response to an HTTP PUT in a successful update operation is an HTTP 200 OK with the resource representation in JSON format
+
+### DELETE
+You can delete a resource using HTTP DELETE method. Not all resources can be deleted. The response to a HTTP DELETE in a successful delete operation is the HTTP 200 OK
+
+## Responses and error codes
+A request processed by the API would return either an HTTP 200 OK or an HTTP error code.
+
+In the case when a 200 OK is returned, the status of the operation is specified in the content of the response.
+
+In the case of an operation processed successfully, the following format is returned as content
+
+{
+
+       "response":
+       {
+           <Resource representation>
+       },
+       "resource": <Resource name accessed>,
+       "status": "success"
+       
+}
+
+In the case the request processing failed, details of the error are returned in the response.
+Here is how a failed operation response looks.
+{
+
+       "response":
+       {
+           "detail": "Error string",
+           "code": "Error code"
+           
+       },
+       "resource": "Resource accessed",
+       "status": "failed"
+       
+}
+
+
+
+The Sonetel API is available at https://api.sonetel.com
+
+A Sandbox account allows you to play with the API, order phone numbers, change configurations etc. Please note that no "real" phone numbers will be assigned to your Sandbox account. I.e. you cannot call the number to test how it works, nor can you make calls or consume services of any type with a Sandbox account. It is only useful for playing with the API.
+
+The sandbox API is available at https://sandbox.api.sonetel.com
+
+## General terms
+
+<a name="country_iso_desc">**Countries**</a> are specified using the standard ISO codes as per [ISO 3166-1](http://en.wikipedia.org/wiki/ISO_3166-1).
+
+<a name="currency_iso_desc">**Currencies**</a> are specified as per the standard [ISO 4217](http://www.iso.org/iso/home/standards/currency_codes.htm).
+
+<a name="tel_country_code_desc">**Telephone country code**</a> is used as a property and filter in many resources, usually specified as field country\_code. This field refers to the standard code assigned to a specific country(ies) by ITU-T. For e.g. +1 for USA, or +46 for Sweden or +91 for India. See [here](http://en.wikipedia.org/wiki/List_of_country_calling_codes) for more details. Some countries may share the same telephone country code, for e.g. both USA and Canada share the same code +1.
+
+<a name="tel_area_code_desc">**Telephone area code**</a> is a 2 to 5 digit routing code for a geographical region in a country and forms part of an E164 number. It is used as a property and filter (specified as area_code in the API) in some resources in the API. Telephone area codes are often quoted with a national dialing prefix “0” or other digits, for e.g. a number in London listed as 020 8765 4321). The API expects the area code usage as the exact area code for that region without the prefix. In some countries such as Italy, a “0” is a part of the area code, in which case “0” must be included in the area code when specified.
+
+All properties and string values follow an all lower case approach except where specifically mentioned. One exception to this rule are places where ISO codes such as those for [country](#country_iso_desc), currency, date/time etc. are specified.
+
+<a name="flag_values">**Boolean or flags**</a> in query strings in the urls always use “yes” or “no”, unless explicitly specified. For e.g. parameter=”yes”.
+
+<a name="date_time_desc">**Date and time format**</a>: All time values used in filters and properties are specified in GMT only. The time format is used as per ISO8601. The basic time format is the default format (YYYYMMDDThh:mm:ssZ).
+
+Unknown parameters in urls are ignored while processing requests.
+
+<a name="user_passwd_desc">**User passwords**</a> are between 5 and 32 characters and can carry anything except some special characters, namely *(%^()+=\[\]\\';/{}|\\"&lt;&gt;?)*.
+
+<a name="user_extension">**User extension**</a> should only be 3 digits and has to be numeric. An extension can start with 0. 000 is not allowed as extension.
+
+<a name="decimal_values_desc">**Decimal values**</a> are represented with a dot (“.”). For e.g. 2.14 or 3.556 etc. As a general rule, the decimal precision (digits after decimal) are specified in the definition of the property or filter. Values passed are always rounded to the specified definition. For e.g. if a property credit\_balance can take up to 2 decimals and a value of 5.334 is specified, the API automatically assumes the value to be 5.33.
+
+<a name="multivalue_filter_desc">**Multi-value filters**</a>: Filters are used while performing searches. The filters are normally passed as query string parameters in the url. In certain cases, it is required that multiple values can be passed for a single filter field. For e.g. if a search requires getting all resources that has a property, country with values either “USA” or “GBR”. In such cases, the values can be passed in the URL as a comma separated list. E.g. api.sonetel.com/resource?country=”USA”,”GBR”
+
+<a name="wildcard_string_search">**String wild-card search**</a>: Some filters support wild-card search. This is normally common for string based searches such as account names, user names, country name etc. The wild card character used is “\*” and a minimum of 3 characters are required to be provided for the search, unless explicitly specified in the filter definition. For e.g. to search for all countries with name having “united” use “name”=\*united\*. Wild card searches are case-insensitive.
+
+<<a name="free_test_num_desc">**Free test numbers**</a>: Sonetel allows [specific partners](http://sonetel.com/en/help/support-center/help-topics/api/can-i-give-free-test-numbers-to-my-users/) to use its phone number stock to allocate free test numbers for trial for a specific period. If you would like to partner with Sonetel and be able to assign free test numbers for your customer, please contact <partners@sonetel.com>.
+
+<a name="eval_mode_desc">**Evaluation mode**</a>: An account in evaluation mode has certain limitations. Outbound phone calls are limited to 1 min and more than 1 parallel call are not allowed. Voicemail to email and SMS to email does not work.
+
+<a name="sonetel_services">**Sonetel services**</a>: Each service within Sonetel is identified using a fixed string identifier across the API. The list of service strings are listed here.
+
+* outbound\_call
+* inbound\_call
+* phnum\_subscription
+* on-net\_call
+* fax\_to\_email
+* sms\_to\_email
+* priceplan\_premium
+* voiceapp\_menu
+* voiceapp\_company-voicemail
+* voiceapp\_prompt-recording
+* voiceapp\_call-thru
+* overusage
+* voiceapp\_call-thru
+* voiceapp\_user-voicemail
+* conference
+<br>
+
+<a name="endpoints">**Endpoints and endpoint types**</a>: Calls made through Sonetel can be started from and sent to different types of *endpoints*. The following endpoint types are defined. For each endpoint type, the endpoint Id can take specific values as defined below.
+
+`user`: A Sonetel user in an account. The endpointId is the user_id
+
+`phonenumber`: In case of outbound calls, this represents a regular phone number (such as a mobile or landline number. For incoming calls, this represents a phone number purchased from Sonetel. The endpointId is the E164 number.
+
+`sip`: A SIP endpoint. The endpointId is a SIP address. E.g. sip:the-api@sonetel.com
+
+`app`: A Sonetel voice app. The endpointId address is left empty and will be fixed in future revisions.
+<br>
+
+<a name="charge_type">**Charge types**</a>: When a service is used in an account, the charges for that usage are applied to the prepaid balance. The charges are classified into the following types
+
+`one_time_fee`: A fee applied to the account when an when a service is added, or in some cases, an instance of a service is added. For e.g. when a phone number subscription is purchased, there is usually a one time fee applied.
+
+`recurring_fee`: A fee applied on a recurring basis. A recurrence\_interval defines the period when the fee is applied.
+
+`per_instance_fee`: A fee applied based on the count of usage events. For e.g. a fee for a service that is applied per user in an account.
+
+`time_usage_fee`: A fee applied based on the usage in time for a service. For e.g. the fee per minute for calls. This fee is also associated with a time\_pulse that specifies the interval for measuring the time usage. For e.g. a pulse of 60 seconds for a call implies that the fee is applied per minute.
+<br>
+
+<a name="access_restr_phnum">**Phone number access restrictions**</a>: Some phone numbers, especially toll-free numbers, in some countries have access limitations where they are not reachable from either fixed phones, mobile phones, pay phones or from outside the country. Access restrictions are used in properties for phone number related resources. The restrictions are specified as a comma separated list of access networks from where the phones numbers are not reachable. Possible networks are “fixed”, “mobile”, “payphone” or “international”. For e.g. “international,payphone” implies that the phone number is not reachable from phones outside the country and from pay phones.
+<br>
+
+<a name="phnum_addr_req">**Address requirements for phone numbers**</a>: Purchasing some type of phone numbers in some countries require an address to be submitted. In some cases an address proof is also needed. The specifications on what is required is available via the API through two separate fields.
+
+`addr_req`: Specifies if there is any requirement to have a local address or any address to use this phone number. More details are available at [this link](http://sonetel.com/en/html/prices/local-phone-numbers-restrictions.shtml). This field can take the following values
+* `none`: There are no address requirements. Anyone anywhere can purchase this phone number
+* `on-request`: An address is required to be provided if there is a request from the local provider.
+* `global`: Any address world-wide
+* `local`: An address in the same geographic zone as the phone number
+
+`addr_proof`: A flag that indicates if an address proof is required along with the address.
+
+<a name="voiceapp_type">**Voice app types**</a>: Voice applications - or Voice apps - are various types of automated telephone services for playing and recording messages, handling callers etc. See more details [here](http://www.sonetel.com/site/pmwiki.php?n=Admin.VoiceApps). The following voice app types are supported.
+`ivr`: A voice [menu](http://www.sonetel.com/site/pmwiki.php?n=Admin.WelcomeMenu) with welcome message, main menu message and actions on digits pressed or timeout and auto attendant functions that to forward calls based on extensions entered
+`mailbox`: A shared voicemail box for an account receives voicemails and delivers emails to a specified email address.
+`sysprompt`: Settings for error prompts for an account/sub-account.
+<br>
+
+<a name="voice">**Pre-recorded prompts**</a>: Sonetel provides pre-recorded voice prompts in various languages that can be used in voice apps as default “voice”. The “voice” field in the JSON definitions can take one of the values specified below.
+en English male
+
+`swe` Swedish male
+`spa` Spanish male
+`hin-fe` Hindi female
+`tam-fe` Tamil female
+`tel-fe` Telugu female
+`en-fe` English female
+`gr-fe` Greek female
+`en-uk-fe` English(UK accent) female
+`fr-fe` French female
+`ara-fe` Arabic female
+<br>
+
+<a name="standard_prompts">**Default prompts**</a>: Voice apps have a set of standard prompts without which the voice app cannot function. These prompts cannot be deleted.
+* Ivr
+    * Welcome prompt
+    * Get extension prompt
+    * Main menu prompt
+* Mailbox
+    * Greeting prompt
+    * Goodbye prompt
+* Sysprompt
+    * Person unavailable prompt
+    * Person busy prompt
+    
+
+## account [/account/{account_id}]
+[sonetelpremium]: http://www.sonetel.com/premium
+
+The account resource represents the Sonetel account for your company.
+This resource contains your company wide settings, account status, prepaid credit etc.
+The account resource is accessed using the unique `account_id`.
+When you sign up on Sonetel, an account is created for you. This account becomes your
+main Sonetel account. Your main Sonetel account can be fetched and updated
+but cannot be created or deleted via the API.
+
+An account  has the following properties
+
+* `id`: The  unique account Id of the company account in Sonetel
+* `name`: The name of the company
+* `status`: The status of the account
+    * `evaluation` – The account is usable for free and paid Sonetel services in evaluation mode. Paid services work in restricted mode as long as credit is available in the account.
+    * `active` – The account is usable for free and paid Sonetel services.
+    * `inactive` – The account is inactive. The account is moved to this state if the account does not have enough credit balance. `status_desc` provides details for the reason why the account is `inactive`.
+* `status_desc`: An additional description of the status of the account. For e.g. this could carry a text describing why the account was disabled.
+* `currency`: [Currency](#currency_iso_desc) for the account. A currency, once set, cannot be changed. All billing related transactions for the account are done in this currency.
+* `area_code`: The [telephone area code](#tel_area_code_desc) where the company is located.
+* `address`: Company address first line
+* `address2`: Company address second line
+* `city`: Company address city name
+* `zipcode`: Company address postal ZIP code
+* `country`: The [country](#country_iso_desc) where the company is located.
+* `credit_balance`: The account balance in the account’s currency specified up to 2 [decimals](#decimal_values_desc).
+* `priceplan`: The priceplan that applies to this account. Accounts that have [Premium][sonetelpremium] enabled, have this value set as `premium`. For other accounts, this value is `regular`.
+
+
+### Fetch account [GET]
+An account can be fetched using its `account_id`.
+
++ Parameters
+    + account_id: 53535 (required, string) - account description
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "account_id" : "53535",
+              "name" : "My company",
+              "account_status" : "active",
+              "status_desc" : null,
+              "currency" : "USD",
+              "address" : "My company address Line 1",
+              "address2" : null,
+              "city" : "Some city",
+              "zipcode" : "336655",
+              "country" : "USA",
+              "credit_balance" : "3.77",
+              "priceplan" : "regular",
+            }
+
+
+### Update account [POST]
+
+Account can be modified by issuing an `HTTP` `POST` or `PUT` to the account resource.
+The following fields can be updated.
+
+* `name`
+* `area_code`
+* `address`
+* `address2`
+* `city`
+* `zipcode`
+* `country`
+* `priceplan`
+
++ Attributes
+    + name - Specify the name of the company if you want to change it
+    + country - Specify the [country](#country_iso_desc) if you want to change it
+    + currency - Specify the [currency](#currency_iso_desc) if you want to change it
+    + area_code (string) - Specify the new [telephone country code](#tel_country_code_desc) if you want to change it
+    + address - Specify the new address if you want to change it
+    + address2 - Specify the new address line 2 if you want to change it
+    + city - Specify the new city if you want to change it
+    + zipcode - Specify the new zipcode if you want to change it
+    + priceplan - Specify the new priceplan if you want to upgrade or downgrade from the current plan
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "account_id" : "53535",
+              "name" : "My company",
+              "account_status" : "active",
+              "status_desc" : null,
+              "currency" : "USD",
+              "address" : "My company address Line 1",
+              "address2" : null,
+              "city" : "Some city",
+              "zipcode" : "336655",
+              "country" : "USA",
+              "credit_balance" : "3.77",
+              "priceplan" : "regular",
+            }
+
+## Group sub-account
+[sonetelpremium]: http://www.sonetel.com/premium
+A sub-account is an account created under your main Sonetel account and is owned by your main account. You may optionally create multiple sub-accounts under your main account via the API (it is currently not possible to view or create sub-accounts via your Sonetel web management panel). Each sub-account is a complete account in itself with its own settings, account credentials, balance etc.
+You cannot create sub-accounts under sub-accounts.
+Sub-accounts allow you to segment data in any way you want. For e.g. you may separate the data for each of your customers by creating a sub-account for each customer.
+A sub-account can be created, searched and deleted using your main account credentials.
+
+**Credit balance – accounts and sub-accounts**
+
+All service usage charges in any of your sub-accounts are applied and debited from your main account credit balance. Your main account balance represents unused funds available for use of Sonetel services both in the main account and all the sub-accounts under the main account.
+
+Sub-accounts also have a credit balance. However, the balance in a sub-account does not represent real money. Sonetel enables you to configure such that the sub-account balance also can be automatically debited when a service is used by that sub-account. i.e. that Sonetel charges the main account for the Service provided, but also can update the balance in the sub-account accordingly. You can also increase or decrease the balance of a sub account in accordance with your own business logic. For example if you receive payments from your customer, want to add credit for testing etc.
+The balance in the main account represents the financial relation between Sonetel and you. The balance in the sub-accounts represents the financial relation between you and your customers. From Sonetel’s perspective the sub-account balance is merely a counter that you can do anything you want with, but Sonetel can debit the sub account balance on your behalf, when there is service usage in the sub-account
+
+The balance in the sub-account can be controlled by the main account credentials via the API.
+If you require that VAT be charged to your sub-accounts for usage, you may optionally specify a VAT % to be applied to all usage charges on the sub-account. The Sonetel billing system automatically applies the extra VAT on top of the usage for the sub-account. The VAT charged for usage is available in usage records.
+Additionally, while setting the credit balance or adding/removing credit from a sub-account, you may optionally specify the VAT value that must be associated to the transaction.
+
+A sub-account has the following fields, quite similar to what an account has.
+
+* `account_id`: The  unique account Id of the company account in Sonetel
+* `name`: The name of the company
+* `status`: The status of the sub-account.
+    * evaluation – The account is usable for free and paid Sonetel services in evaluation mode. Paid services work in restricted mode as long as credit is available in the account.
+    * active – The account is usable for free and paid Sonetel services.
+    * inactive – The account is inactive. The account is moved to this state if the account does not have enough credit balance. `status_desc` provides details for the reason why the account is inactive.
+* `status_desc`: An additional description of the status of the account. For e.g. this could carry a text describing why the account was disabled.
+* `currency`: [Currency](#currency_iso_desc) for the account. A currency, once set, cannot be changed. All billing related transactions for the account are done in this currency.
+* `area_code`: The [telephone area code](#tel_area_code_desc) where the company is located.
+* `address`: Company address first line
+* `address2`: Company address second line
+* `city`: Company address city name
+* `zipcode`: Company address postal ZIP code
+* `country`: The [country](#country_iso_desc) where the company is located.
+* `credit_balance`: The account balance in the account’s currency specified up to 2 [decimals](#decimal_values_desc).
+* `priceplan`: The priceplan that applies to this sub-account. Sub-accounts that have [premium][sonetelpremium] enabled, have this value set as `premium`. For other accounts, this value is `regular`.
+* `user_lname`: The last name of the company user
+* `email`: The user’s email address
+* `password`: The user’s password
+* `usage_vat_percent`: The optional VAT (value added tax) percentage that is applied for all usage in this sub-account. The VAT is applied on top of the actual usage for all types of usage such as setup and recurring fee, time usage fee and fixed fee.
+The value must be specified as an absolute percentage value. For e.g. 20.55 percent VAT must be specified as `20.55`. The value is specified up to 2 decimals.
+The VAT takes effect and applies to all future usage from the time it is set.
+
+<a name="change_account_status">**Definition of status and change rules**</a>
+ * `active` – The account is usable for free and paid Sonetel services in Full mode. Paid services work based on the credit balance in the account.
+ * `inactive` – The account is inactive and no services can be used in this account. status_desc provides details for the reason why the account is inactive.
+ * `disabled` – The account is suspended for misuse or other reason. The account cannot be used for any service. An account cannot be moved to/from this state via the API. This state can only be controlled by Sonetel.
+
+## Create [/account]
+
+A sub-account resource is created via POST to the account list resource. Only the main account credentials can be used while creating a sub-account. A sub-account can never create another sub-account.
+
+### Create sub-account [POST]
+**Subaccount templates**
+
+In many cases, most sub-accounts that are created under a main account may have fixed
+and common values for various parameters. For e.g. all sub-accounts should be created
+with currency as `USD` and country as `USA`. In such cases, it may be helpful to
+define a sub-account template under your main account. A sub-account template is a
+collection of account parameters and their values. Instead of passing each parameter
+and its value while creating a sub-account, you only need to pass the template reference
+and the API automatically sets the corresponding values in the sub-account.
+One or more sub-account templates can be defined in the main account via the API panel
+on Sonetel web portal. More information on sub-account templates can be found here [TBD].
+When a template-id is not passed in the request while creating an account,
+the API automatically uses the default template in the account.
+
+Mandatory parameters are listed here
+* `name`
+* `email`
+* `user_fname`
+* `password`
+
+The following parameters may be specified optionally.
+
+* `status`: If not specified, the status is set to `active`. [Status change rules](#change_account_status) apply.
+* `country`: If not specified, the value from default sub-account template(if available) is used, else it is set equal to the value in the main account
+* `currency`: If not specified, the value from default sub-account template(if available) is used, else it is set equal to the value in the main account
+* `area_code`: If not specified, the value from default sub-account template(if available) is used, else it is set equal to the value in the main account
+* `address`
+* `address2`
+* `city`
+* `zipcode`
+* `user_lname`
+* `template_id`: If this is not specified, the API assumes and uses the default template in the main account
+* `credit_balance`: If this is not specified, it is set as zero.
+* `vat`: The VAT value that must be associated with setting the `credit_balance`. This field is only relevant if the `credit_balance` is non-zero.
+* `priceplan`: If this is not specified, the priceplan is set to `regular`
+* `usage_vat_percent`
+
++ Attributes
+    + name (required, string) - The name of the company must be specified
+    + email (required, string) - When the company is created, a single user, who is also an administrator in the account is also created. The email address of the first admin user in the account must be specified. This user is created automatically as part of this request. The user can subsequently be managed using the /user API
+    + user_fname (required, string) - The first name of the user created along with the account
+    + password (required, string) - The password for the user that is created along with the account
+    + status - If not specified, the status is set to `active`. Status change rules apply as usual
+    + country - If not specified, the value from default sub-account template(if available) is used, else it is set equal to the value in the main account
+    + currency - If not specified, the value from default sub-account template(if available) is used, else it is set equal to the value in the main account
+    + area_code - If not specified, the value from default sub-account template(if available) is used, else it is set equal to the value in the main account
+    + address - The address of the company
+    + address2 - Address line 2 of the company
+    + city - City where the company is located
+    + zipcode - Zipcode where the company is located
+    + user_lname - The last name of the user that is created automatically with the account
+    + template_id - If this is not specified, the API assumes and uses the default template in the main account
+    + credit_balance - If this is not specified, it is set as zero
+    + vat - The VAT value that must be associated with setting the credit_balance. This field is only relevant if the credit_balance is non-zero
+    + priceplan - If this is not specified, the priceplan is set to regular
+    + usage_vat_percent - Set as zero, if this is not specified
+
++ Response 200
+    + Body
+    
+            {
+                "account_id" : "53535",
+                "name" : "My company",
+                "status" : "active",
+                "status_desc" : "",
+                "currency" : "USD",
+                "address" : "My company address Line 1",
+                "address2" : "",
+                "city" : "Some city",
+                "zipcode" : "336655",
+                "country" : "USA",
+                "area_code" : "414",
+                "credit_balance" : "3.77",
+                "priceplan" : "regular",
+                "usage_vat_percent" : "25.00"
+            }
+
+
+## View and manage [/account/{subaccount_id}]
+
+### Show sub-account [GET]
+A sub-account can be fetched using its `account_id`
+
++ Parameters
+    + subaccount_id: 53535 (required, string) - The subaccount id to fetch
+
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "account_id" : "53535",
+                "name" : "My company",
+                "status" : "active",
+                "status_desc" : null,
+                "currency" : "USD",
+                "address" : "My company address Line 1",
+                "address2" : null,
+                "city" : "Some city",
+                "zipcode" : "336655",
+                "country" : "USA",
+                "area_code" : "414",
+                "credit_balance" : "3.77",
+                "priceplan" : "regular",
+                "usage_vat_percent" : "25.00",
+            }
+
+### Update sub-account [PUT]
+
+Sub-accounts can be updated by issuing a PUT to the account.
+
+The following fields can be updated
+
+* `name`
+* `status`
+* `status_desc`
+* `area_code`
+* `address`
+* `address2`
+* `city`
+* `zipcode`
+* `country`
+* `change_balance`
+* `change_balance_vat`
+* `priceplan`
+* `usage_vat_percent`
+
+**Managing credit balance in sub-accounts**
+
+`change_balance` is handled in a special way during update. `change_balance` is specified
+as a value that must be added or removed from the current `credit_balance`.
+To increment the current `credit_balance`, specify a positive value, for e.g.
+```
+"change_balance" : "1.2"
+```
+
+To decrement the current `credit_balance`, specify a negative value
+```
+"change_balance" : "-1.2"
+```
+For e.g. if a sub-account has a balance of $3 and an Update is issued with a
+`change_balance` as `-1.2` (the currency is automatically assumed to be the same
+as the sub-account currency), the resulting credit balance in the account
+will be updated to `$1.8`.
+
++ Attributes
+    + name - The new company name
+    + status - The new status. [Status change rules](#change_account_status) apply
+    + status_desc - A text description to go along with the status change, such as "Insufficient credit" etc.
+    + area_code - The new telephone are code
+    + address - The new address
+    + address2 - The new address line 2
+    + city - The new city
+    + zipcode - The new zipcode
+    + country - The new country
+    + change_balance - See above for information how how the balance can be changed.
+    + change_balance_vat - The VAT value associated to the change_balance. This is the absolute VAT value(and not the percentage) in addition to the change_balance
+    + priceplan - The new priceplan
+    + usage_vat_percent - The VAT (value added tax) percentage that is applied for all usage in this sub-account. The VAT is applied on top of the actual usage and applies for setup and recurring fee, time usage fee and fixed fee. The value must be specified as an absolute percentage value. For e.g. 20 percent VAT must be specified as “20”
+    
++ Response 200
+    + Body
+    
+            {
+                "account_id" : "53535",
+                "name" : "My company",
+                "status" : "active",
+                "status_desc" : null,
+                "currency" : "USD",
+                "address" : "My company address Line 1",
+                "address2" : null,
+                "city" : "Some city",
+                "zipcode" : "336655",
+                "country" : "USA",
+                "area_code" : "414",
+                "credit_balance" : "3.77",
+                "priceplan" : "regular",
+                "usage_vat_percent" : "25.00",
+            }
+
+### Delete sub-account [DELETE]
+
+Sub-accounts can be deleted by main account using the main account credentials.
+A deleted sub-account can in no way be retrieved.
+
++ Response 200
+    + Body
+    
+            {
+                "account_id" : "53535",
+                "name" : "My company",
+                "status" : "active",
+                "status_desc" : null,
+                "currency" : "USD",
+                "address" : "My company address Line 1",
+                "address2" : null,
+                "city" : "Some city",
+                "zipcode" : "336655",
+                "country" : "USA",
+                "area_code" : "414",
+                "credit_balance" : "3.77",
+                "priceplan" : "regular",
+                "usage_vat_percent" : "25.00",
+            }
+
+
+## Search [/account{?name,status,country,min_credit,max_credit,email,priceplan}]
+[sonetelpremium]: http://www.sonetel.com/premium
+
+A sub-account can be searched using filters passed as query string parameters
+to the account list resource.
+
+
+### Search subaccount [GET]
+An account 
+
++ Parameters
+    + name: my company (optional, string) - Exact/partial company name. The search is done ignore case. Minimum 3 characters are required in the filter. This is a string wild card search.
+    + status: active (optional, string) - The account status string value. The values it can take are `evaluation`, `active`, `inactive`, `disabled`
+    + country: some (optional, string) - 
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "account_id" : "53535",
+              "name" : "My company",
+              "account_status" : "active",
+              "status_desc" : null,
+              "currency" : "USD",
+              "address" : "My company address Line 1",
+              "address2" : null,
+              "city" : "Some city",
+              "zipcode" : "336655",
+              "country" : "USA",
+              "credit_balance" : "3.77",
+              "priceplan" : "regular",
+            }
+
+## Group country
+The *country* resource represents standard details of a country such as the [telephone country code](#tel_country_code_desc), the [ISO country code](#country_iso_desc) etc.
+It also includes phone number coverage and pricing per country.
+*country* is a list resource and can only be fetched.
+
+*country* has the following properties
+
+| **Property**                           | **Description**                                                                                                                                                                                                                              |
+|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| country                                | The [country’s](#country_iso_desc) ISO code.                                                                                                                                                                                                 |
+| name                                   | Country name                                                                                                                                                                                                                                 |
+| country\_code                          | The [telephony country code](#tel_country_code_desc) as per ITU standards.                                                                                                                                                                   |
+| description                            | A textual description mainly referring to any special information primarily related to phone numbers in the country, such as reachability issues from certain types of phone networks, or guidance on address requirements for purchase etc. |
+| [phonenumbers](#countryphonenumbers)   | Information on local phone numbers that are supported in the country                                                                                                                                                                         |
+| [simple\_menu](#_/country:simple_menu) | A simplified view of phone number stock at Sonetel with availability status for different prefixes and cities                                                                                                                                |
+
+### <span id="countryphonenumbers" class="anchor"></span>/country:phonenumbers:price
+
+*phonenumbers* is a list of entries under a country, with each entry carrying information about a specific type of phone number(national, tollfree or geographic) in that country.
+
+You can view the capabilities and services available of the phone number type such as support for [SMS](http://help.sonetel.com/sms) or [Fax](http://help.sonetel.com/fax).
+
+You can also view if the numbers of this type are available for free testing in the country. Free test numbers can be assigned to your account by [creating a phnumsubscription](#_Create) with a special flag.
+
+In some countries, local telephone authorities may require address information and/or address proof document to be submitted while purchasing phone numbers of a particular type. This information is also available per number type via the API. The API does not yet support upload of such information, which makes it impossible to purchase numbers in such countries via the API.
+
+Toll-free numbers in many countries are only reachable from some types of phones. For e.g. they may not be reachable from pay-phones or mobile phones, or from outside the country. You can get information about such restrictions in the *access\_restrictions* field.
+
+| **Property**                   | **Description**                                                                                                                                                                                                       |
+|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| type                           | `national`,`geographic`, or `tollfree` number types can be specified                                                                                                                                                 |
+| freetest                       | [Flag](#flag_values) specifying if numbers of this type are available for [free test ](#free_test_num_desc) in this country                                                                                           |
+| fax\_support                   | [Flag](#flag_values) that specifies if this type of number can receive [Fax](http://help.sonetel.com/fax). Fax has to be explicitly activated per phone number                                                       |
+| sms\_support                   | [Flag](#flag_values) that specifies if phone numbers of this type can receive [SMS](http://help.sonetel.com/sms)                                                                                                                                     |
+| addr\_req                      | Specifies if there is any [requirement](#phnum_addr_req) to have an address to purchase and use this type of phone number                                                                                             |
+| addr\_proof                    | A [flag](#flag_values) that specifies if an [address proof](#phnum_addr_req) is required to be submitted for this type of phone number.                                                                               |
+| access\_restrictions           | Specifies the [phone number reachability](#access_restr_phnum) from different networks                                                                                                                                |
+| restrictions\_desc             | A general text specifying restrictions applicable to numbers of the specific type within the country.                                                                                                                 |
+| [price](#_/phonenumbers/price) | The price details for the type of phone number                                                                                                                                                                      |
+
+### <span id="_/phonenumbers/price" class="anchor"></span>/country:phonenumbers:price
+
+You can get pricing information for the number type via the API. This is available under *price.*
+
+| **Property**         | **Description**                                                                                                                                                                         |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| currency             | The [currency](#currency_iso_desc) in which the price is specified                                                                                                                      |
+| range                | The number series. The value specifies the total phone numbers in a phone number series. For e.g. for a single number, the value is “1”. For a 10 number series, the value is “10” etc. |
+| price\_category      | The price category of the number. This can take values `1` - regular, `2` - gold, `3` - gold+, `4` - gold++, `5` -gold+++. This field only applies to single numbers.                   |
+| one\_time\_fee       | One-time fee for purchasing the number(s). Up to 2 [decimals](#decimal_values_desc).                                                                                                    |
+| recurring\_fee       | Periodic fee on purchasing the number(s). Up to 2 [decimals](#decimal_values_desc).                                                                                                     |
+| recurrence\_interval | The recurrence interval for the recurring fee. Specified in days(e.g. `15d`) or months(e.g. `3m`)                                                                                           |
+| per\_call\_fee       | The per call fee applicable for calls to the number. Up to 3 [decimals](#decimal_values_desc).                                                                                          |
+| per\_min\_fee        | The charge per minute for calls to the number. Up to 3 [decimals](#decimal_values_desc).                                                                                                |
+| charge\_interval     | The charge interval in seconds for calls to the number.                                                                                                                                 |
+| per\_sms\_fee        | The per SMS receiving fee applicable Up to 2 [decimals](#decimal_values_desc).                                                                                                          |
+| per\_fax\_fee        | The per FAX receiving fee applicable Up to 2 [decimals](#decimal_values_desc).                                                                                                          |
+
+Phone numbers are priced differently based on their type (national, geographic, toll-free). Also, numbers that look good, that are easy to remember, are categorized as [GOLD](http://sonetel.com/en/help/help-topics/phone-numbers/gold-numbers/) numbers and are priced differently. The field *price\_category* specifies the category of the number.
+
+A number series, having either 10, 20 or 100 numbers in a series are usually available at a discount. The field *range* specifies if the price information is for a number series.
+
+### <span id="_/country:simple_menu" class="anchor"></span>/country:simple\_menu
+
+In countries where Sonetel offers phone number, you can get a simplified summary view of the numbers that are available for ordering in simple\_menu.
+
+| **Property** | **Description**                                                                                                                                                                                                                                                                                                        |
+|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| popular      | List of [information blocks](#country_ph_info_block) for phone numbers prefixes and cities that are popular in the country. There may be zero or more popular prefixes in a country, all of which will be returned in this field.                                                                                      |
+| mobile       | List of [information blocks](#country_ph_info_block) for mobile prefixes available in the country                                                                                                                                                                                                                      |
+| national     | List of [information blocks](#country_ph_info_block) for all National prefixes available in the country                                                                                                                                                                                                                |
+| toll-free    | List of [information blocks](#country_ph_info_block) for all toll-free prefixes available in the country                                                                                                                                                                                                               |
+| geographic   | List of [information blocks](#country_ph_info_block) for all cities and the corresponding [telephone area code](#tel_area_code_desc) where numbers are available in the country. If the country has states, this field will not be available here. Instead this field is then available under the /states/simple\_menu |
+| states       | The list of states in the country. This only applies to USA                                                                                                                                                                                                                                                            |
+
+Each <span id="country_ph_info_block" class="anchor"></span>information block contains the following fields
+
+| **Property**   | **Description**                                                                                                                                                                                                                                                                                                                                      |
+|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| area\_code     | The [telephone area code](#tel_area_code_desc) of the phone number.                                                                                                                                                                                                                                                                                  |
+| city           | Name of the city where the number is. The name is descriptive and does not follow any fixed standard. This only applies to geographic numbers                                                                                                                                                                                                        |
+| simple\_name   | A suggested simple name for the city/type of number. This field is especially useful in cases where a bigger city may have many area codes and the field “city” has a slightly complex naming convention to ensure that each area code is uniquely named, such as “New York Zone 1”, “New York Zone 2” etc. This only applies to geographic numbers. |
+| stock          | The amount of numbers in stock at this instant.                                                                                                                                                                                                                                                                                                      |
+| freenum\_stock | The amount of numbers available for time-limited free testing in stock. The ability to assign numbers for free testing is dependent on your [agreement](#free_test_num_desc) with Sonetel                                                                                                                                                            |
+| default        | [Flag](#flag_values) indicating if this prefix/city is the default choice for this country. This field is absent in all entries except in the entry that is the default.                                                                                                                                                                             |
+
+The list of states has the following fields.
+
+| **Property** | **Description**                  |
+|--------------|----------------------------------|
+| state\_id    | A unique identifier of the state |
+| name         | The name of the state.           |
+
+<span id="_/country/states" class="anchor"></span>
+
+## Search with name [GET /country{?name}]
+The default response returns country information and phonenumbers(excluding the price) based on the name.
++ parameters
+    + name: united states (optional) - The name of the country
+
++ Response 200 (application/json)
+
+    + Body
+
+            {[
+                {
+                    "country" : "USA",
+                    "name" : "USA",
+                    "country_code" : "1",
+                    "phonenumbers" : {
+                    [{
+                        "type" : "geographic",
+                        "freetest" : "yes",
+                        "fax_support" : "yes",
+                        "sms_support" : "yes",
+                        "addr_req" : "none",
+                        "addr_proof" : "no",
+                        "access_restrictions" : "",
+                        "restrictions_desc" : "some text",
+                    },
+                    {
+                        "type" : "toll-free",
+                        "freetest" : "no",
+                        "fax_support" : "no",
+                        "sms_support" : "no",
+                        "addr_req" : "none",
+                        "addr_proof" : "no",
+                        "access_restrictions" : "",
+                        "restrictions_desc" : "some text",
+                    }
+                    ]
+            ]}
+
+## Show price [GET /country{?country,type,fields}]
+You can get phone number price information using the field `price`.
+You can also narrow down which number type information you need in the response
++ parameters
+    + country: USA (optional) - The [country](#country_iso_desc) ISO code
+    + type: geographic (optional) - Setting number type to `geographic` only returns information of city numbers
+    + fields: price (optional) - Specify `price` to get phone number pricing information in the country
+        +Members
+            `price` - Show the price information of phone numbers in the country
+            `simple_menu` - Simple_menu provides information about the different types of numbers, cities where numbers are available and also the popular cities in the country for number ordering. In countries where regional states are supported (currently only in the USA), the list of states is sent instead of the list of cities.
+The information is structured to enable you to have information required to create user interfaces for number ordering.
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                phonenumbers: [
+                {
+                    phnum_support: "yes",
+                    freetest: "yes",
+                    fax_support: "yes",
+                    sms_support: "yes",
+                    addr_req: "none",
+                    access_restrictions: "",
+                    addr_proof: "no",
+                    restrictions_desc: "",
+                    type: "geographic",
+                    price: [
+                    {
+                        currency: "USD",
+                        range: "1",
+                        price_category: "regular",
+                        one_time_fee: "0.0",
+                        recurring_fee: "1.99",
+                        recurrence_interval: "1m",
+                        per_call_fee: "0.0",
+                        per_min_fee: "0.0",
+                        charge_interval: "60",
+                        per_sms_fee: "0.00",
+                        per_fax_fee: "0.00"
+                    },
+                    {
+                        currency: "USD",
+                        range: "10",
+                        price_category: "regular",
+                        one_time_fee: "0.0",
+                        recurring_fee: "15.0",
+                        recurrence_interval: "1m",
+                        per_call_fee: "0.0",
+                        per_min_fee: "0.0",
+                        charge_interval: "60",
+                        per_sms_fee: "0.00",
+                        per_fax_fee: "0.00"
+                    },
+                    {
+                        currency: "USD",
+                        range: "100",
+                        price_category: "regular",
+                        one_time_fee: "0.0",
+                        recurring_fee: "54.0",
+                        recurrence_interval: "1m",
+                        per_call_fee: "0.0",
+                        per_min_fee: "0.0",
+                        charge_interval: "60",
+                        per_sms_fee: "0.00",
+                        per_fax_fee: "0.00"
+                    },
+                    {
+                        currency: "USD",
+                        range: "20",
+                        price_category: "regular",
+                        one_time_fee: "10.0",
+                        recurring_fee: "10.0",
+                        recurrence_interval: "1m",
+                        per_call_fee: "0.0",
+                        per_min_fee: "0.01",
+                        charge_interval: "60",
+                        per_sms_fee: "0.00",
+                        per_fax_fee: "0.00"
+                    },
+                    {
+                        currency: "USD",
+                        range: "1",
+                        price_category: "gold",
+                        one_time_fee: "9.0",
+                        recurring_fee: "1.99",
+                        recurrence_interval: "1m",
+                        per_call_fee: "0.0",
+                        per_min_fee: "0.0",
+                        charge_interval: "60",
+                        per_sms_fee: "0.00",
+                        per_fax_fee: "0.00"
+                    },
+                    {
+                        currency: "USD",
+                        range: "1",
+                        price_category: "gold+",
+                        one_time_fee: "50.0",
+                        recurring_fee: "1.99",
+                        recurrence_interval: "1m",
+                        per_call_fee: "0.0",
+                        per_min_fee: "0.0",
+                        charge_interval: "60",
+                        per_sms_fee: "0.00",
+                        per_fax_fee: "0.00"
+                    },
+                    {
+                        currency: "USD",
+                        range: "1",
+                        price_category: "gold++",
+                        one_time_fee: "495.0",
+                        recurring_fee: "1.99",
+                        recurrence_interval: "1m",
+                        per_call_fee: "0.0",
+                        per_min_fee: "0.0",
+                        charge_interval: "60",
+                        per_sms_fee: "0.00",
+                        per_fax_fee: "0.00"
+                    },
+                    {
+                        currency: "USD",
+                        range: "1",
+                        price_category: "gold+++",
+                        one_time_fee: "995.0",
+                        recurring_fee: "1.99",
+                        recurrence_interval: "1m",
+                        per_call_fee: "0.0",
+                        per_min_fee: "0.0",
+                        charge_interval: "60",
+                        per_sms_fee: "0.00",
+                        per_fax_fee: "0.00"
+                    }]
+                }],
+                time_zone: "GMT",
+                description: "",
+                name: "United States",
+                country_code: "1",
+                currency: "USD",
+                country: "USA"
+            }
+
+## Phone numbers [GET /country{?country,type,range}]
+You can get phone number price information using the field `price`.
+You can also narrow down which number type information you need in the response
++ parameters
+    + country: DNK (optional) - The [country](#country_iso_desc) ISO code
+    + type: national,geographic (optional) - You can specify a comma separated list of types to get more than one type
+    + range: 1 (optional) - Set this as `1` to get only single numbers. Setting this to `10` gets you 10 number series
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "phonenumbers": [
+                {
+                    "phnum_support": "yes",
+                    "freetest": "no",
+                    "fax_support": "yes",
+                    "sms_support": "no",
+                    "addr_req": "global",
+                    "access_restrictions": "",
+                    "addr_proof": "yes",
+                    "restrictions_desc": "",
+                    "type": "geographic"
+                },
+                {
+                    "phnum_support": "yes",
+                    "freetest": "no",
+                    "fax_support": "yes",
+                    "sms_support": "no",
+                    "addr_req": "global",
+                    "access_restrictions": "",
+                    "addr_proof": "yes",
+                    "restrictions_desc": "",
+                    "type": "national"
+                }],
+                "time_zone": "GMT",
+                "description": "Toll-free numbers are recommended for customers outside Denmark.<br>City numbers require that you provide your address (anywhere in the world) and other supporting documents.",
+                "name": "Denmark",
+                "country_code": "45",
+                "currency": "EUR",
+                "country": "DNK"
+            }
+
+## Simple menu [GET /country{?country,fields}]
+Simple_menu provides information about the different types of numbers, cities where numbers are available and also the popular cities in the country for number ordering.
+The information is structured to enable you to have information required to create user interfaces for number ordering.
+The response returns the simple_menu(and the phonenumbers not shown in the example above). The list of states would be returned in the case of USA. For other countries, the list of cities would be returned instead of states.
+In countries where regional states are supported (currently only in the USA), the list of states is sent instead of the list of cities.
+If states is returned, you can then use the numberstocksummary API to retrieve the cities in a state.
+
++ parameters
+    + country: IND (optional) - The [country](#country_iso_desc) ISO code
+    + fields: simple_menu (optional) - Specify `simple_menu` to get the menu for the country
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                phonenumbers: [
+                {
+                    phnum_support: "yes",
+                    freetest: "no",
+                    fax_support: "no",
+                    sms_support: "no",
+                    addr_req: "global",
+                    access_restrictions: "",
+                    addr_proof: "yes",
+                    restrictions_desc: "",
+                    type: "geographic"
+                },
+                {
+                    phnum_support: "yes",
+                    freetest: "no",
+                    fax_support: "no",
+                    sms_support: "no",
+                    addr_req: "on-request",
+                    access_restrictions: "",
+                    addr_proof: "no",
+                    restrictions_desc: "",
+                    type: "tollfree"
+                }],
+                time_zone: "GMT",
+                simple_menu:
+                {
+                    geographic: [
+                    {
+                        stock: "0",
+                        area_code: "80",
+                        freenum_stock: "0",
+                        simple_name: "Bangalore",
+                        city: "Bangalore"
+                    },
+                    {
+                        stock: "0",
+                        area_code: "11",
+                        freenum_stock: "0",
+                        simple_name: "Delhi",
+                        city: "Delhi"
+                    },
+                    {
+                        stock: "0",
+                        area_code: "22",
+                        freenum_stock: "0",
+                        simple_name: "Mumbai",
+                        city: "Mumbai"
+                    }],
+                    popular: [
+                    {
+                        stock: "0",
+                        area_code: "80",
+                        freenum_stock: "0",
+                        simple_name: "Bangalore",
+                        city: "Bangalore"
+                    }],
+                    toll-free: [
+                    {
+                        stock: "0",
+                        area_code: "000800",
+                        freenum_stock: "0",
+                        simple_name: "Toll free",
+                        city: "Toll free"
+                        }]
+                },
+                description: "Anyone can buy a number in India but you will be requested to provide your address (anywhere in the world) and proof of address before the number is activated.",
+                name: "India",
+                country_code: "91",
+                currency: "USD",
+                country: "IND"
+            }
+
+## Group SomeGroup
+
+
+## someresource [/someresource{?someparam}]
+
+Description for someresource
+
+### Get someresource [GET]
+Description for GET someresource
+
++ Parameters
+    + someparam: 1a3H53l6345 (required, string) - someparam descriptionThe ID of the transaction for which the payment-receipt is required
+
++ Response 200 (application/json)
+
+### Create someresource [POST]
+
+Description for CREATE someresource
+
++ Response 200
+
+## Group notification
+Description of notification
+
+A notification has the following fields
+* `notification_id`: The  unique Id of the notification.
+* `type`: The type of notification. This can be `sms`,`email`,`webhook` or `callback`
+* `reference_id`: A reference added by the user of the API to track the notification. Can be used for searching notifications
+
+**Notification type sms**
+
+If the notification type is `sms`, the field `sms` carries details of the SMS notification.
+It has the following fields.
+
+* `from`: The phone number shown to the phone where SMS delivered
+* `to`: The mobile number to which SMS is sent. The number must be in [E164 format](https://en.wikipedia.org/wiki/E.164)
+* `text`: The text message to be sent in unicode.
+* `status`: Status of SMS delivery.
+* `error_code`: Error code in case of a failure
+* `error_desc`: Error description
+* `reattempt_count`: The number of times the SMS has been reattempted.
+
+
+## Create [/notification]
+### Create notification [POST]
+
++ Attributes
+    + type: sms (required, string) - Only `sms` is supported at the moment
+        + default: `sms`
+    + to: 4686655234 (required, string) - The mobile number to deliver to
+    + from: 16362341176 (required, string) - The number shown as the sender
+    + text: "How are things?" (required, string) - The text message
+    
++ Request Send an SMS (application/json)
+You can send an SMS by simply specifying the from, to and the text message.
+    + Body
+    
+            {
+                "type" : "sms",
+                "sms" : {
+                    "from" : "16362341176",
+                    "to" : "4686655234",
+                    "text" : "How are things?"
+                }
+            }
+
+
++ Response 200
+The response carries the notification along with it's status.
+    + Body
+    
+            {
+                "notification_id" : "5y1gg3916368hmI",
+                "from" : "16362341176",
+                "to" : "4686655234",
+                "status_desc" : null,
+                "currency" : "USD",
+                "address" : "My company address Line 1",
+                "address2" : null,
+                "city" : "Some city",
+                "zipcode" : "336655",
+                "country" : "USA",
+                "area_code" : "414",
+                "credit_balance" : "3.77",
+                "priceplan" : "regular",
+                "usage_vat_percent" : "25.00",
+            }
+
++ Request (application/json)
+The details are here
+    + Body
+    
+            {
+                "from" : "16362341176",
+                "to" : "4686655234",
+                "text" : "How are things?"
+            }
+
+
++ Response 200
+    + Body
+    
+            {
+                "notification_id" : "5y1gg3916368hmI",
+                "from" : "16362341176",
+                "to" : "4686655234",
+                "status_desc" : null,
+                "currency" : "USD",
+                "address" : "My company address Line 1",
+                "address2" : null,
+                "city" : "Some city",
+                "zipcode" : "336655",
+                "country" : "USA",
+                "area_code" : "414",
+                "credit_balance" : "3.77",
+                "priceplan" : "regular",
+                "usage_vat_percent" : "25.00",
+            }
+
+## Group Pdf
+
+
+## payment-receipt [/pdf/payment-receipt{?transaction_id}]
+
+When users make payments and/or use Sonetel services like buying phone numbers, subscribe to “premium” plan e.t.c., Sonetel generates the payment/usage receipts in PDF format using this API and also sends the generated receipts by email using this API.
+The /pdf/payment-receipt endpoint is a helper resource that specifically addresses the generation and email dispatch for the payment receipts in PDF format.
+The payment API can specify whether to generate, or, generate and email a payment receipt corresponding to the given transaction_id.
+
+A Pdf object has the following attributes:
+
++ `transaction_id` <br> The transaction_id corresponding to the payment.
++ `email_to` <br> This is a multi-value comma-separated list of email addresses to which the generated PDF payment receipt needs to be emailed.
+
+### Get a Payment receipt [GET]
+You can retrieve the generated PDF payment receipt corresponding to a transaction.
+
++ Parameters
+    + transaction_id: 1a3H53l6345 (required, string) - The ID of the transaction for which the payment-receipt is required
+
++ Response 200 (application/json)
+
+### Create a pdf payment-receipt [POST]
+
+The [generated](#country_iso_desc) PDF payment receipt can be emailed to the intended recipients using a POST request on the pdf/payment-receipt resource
+
++ Response 200
+
+
+## Group Question
+
+A Question object has the following attributes:
+
++ question
++ published_at - An ISO8601 date when the question was published.
++ url
++ choices - An array of Choice objects.
+
++ Parameters
+    + question_id: 1 (required, number) - ID of the Question in form of an integer
+
+
+## Choice [/questions/{question_id}/choices/{choice_id}]
+
++ Parameters
+    + question_id: 1 (required, number) - ID of the Question in form of an integer
+    + choice_id: 1 (required, number) - ID of the Choice in form of an integer
+
+### Vote on a Choice [POST]
+
+This action allows you to vote on a question's choice.
+
++ Response 201
+
+    + Headers
+
+            Location: /questions/1
+
+## Questions Collection [/questions{?page}]
+
++ Parameters
+    + page: 1 (optional, number) - The page of questions to return
+
+### List All Questions [GET]
+
++ Response 200 (application/json)
+
+    + Headers
+
+            Link: </questions?page=2>; rel="next"
+
+    + Body
+
+            [
+                {
+                    "question": "Favourite programming language?",
+                    "published_at": "2014-11-11T08:40:51.620Z",
+                    "url": "/questions/1",
+                    "choices": [
+                        {
+                            "choice": "Swift",
+                            "url": "/questions/1/choices/1",
+                            "votes": 2048
+                        }, {
+                            "choice": "Python",
+                            "url": "/questions/1/choices/2",
+                            "votes": 1024
+                        }, {
+                            "choice": "Objective-C",
+                            "url": "/questions/1/choices/3",
+                            "votes": 512
+                        }, {
+                            "choice": "Ruby",
+                            "url": "/questions/1/choices/4",
+                            "votes": 256
+                        }
+                    ]
+                }
+            ]
+
+### Create a New Question [POST]
+
+You may create your own question using this action. It takes a JSON
+object containing a question and a collection of answers in the
+form of choices.
+
++ question (string) - The question
++ choices (array[string]) - A collection of choices.
+
++ Request (application/json)
+
+        {
+            "question": "Favourite programming language?",
+            "choices": [
+                "Swift",
+                "Python",
+                "Objective-C",
+                "Ruby"
+            ]
+        }
+
++ Response 201 (application/json)
+
+    + Headers
+
+            Location: /questions/2
+
+    + Body
+
+            {
+                "question": "Favourite programming language?",
+                "published_at": "2014-11-11T08:40:51.620Z",
+                "url": "/questions/2",
+                "choices": [
+                    {
+                        "choice": "Swift",
+                        "url": "/questions/2/choices/1",
+                        "votes": 0
+                    }, {
+                        "choice": "Python",
+                        "url": "/questions/2/choices/2",
+                        "votes": 0
+                    }, {
+                        "choice": "Objective-C",
+                        "url": "/questions/2/choices/3",
+                        "votes": 0
+                    }, {
+                        "choice": "Ruby",
+                        "url": "/questions/2/choices/4",
+                        "votes": 0
+                    }
+                ]
+            }
