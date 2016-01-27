@@ -211,6 +211,7 @@ en English male
 ## account [/account/{account_id}]
 [sonetelpremium]: http://www.sonetel.com/premium
 
+
 The account resource represents the Sonetel account for your company.
 This resource contains your company wide settings, account status, prepaid credit etc.
 The account resource is accessed using the unique `account_id`.
@@ -239,6 +240,7 @@ An account  has the following properties
 
 
 ### Fetch account [GET]
+
 An account can be fetched using its `account_id`.
 
 + Parameters
@@ -617,7 +619,7 @@ It also includes phone number coverage and pricing per country.
 | [phonenumbers](#countryphonenumbers)   | Information on local phone numbers that are supported in the country                                                                                                                                                                         |
 | [simple\_menu](#_/country:simple_menu) | A simplified view of phone number stock at Sonetel with availability status for different prefixes and cities                                                                                                                                |
 
-### <span id="countryphonenumbers" class="anchor"></span>/country:phonenumbers:price
+### <span id="countryphonenumbers" class="anchor"></span>/country:phonenumbers
 
 *phonenumbers* is a list of entries under a country, with each entry carrying information about a specific type of phone number(national, tollfree or geographic) in that country.
 
