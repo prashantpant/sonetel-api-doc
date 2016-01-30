@@ -603,6 +603,118 @@ An account
               "priceplan" : "regular",
             }
 
+## Group LCR
+The *globaldata LCR* resource presents the pricing details for making outbound calls using Sonetel.
+
+The LCR resource has the following properties.
+
+| **Property**     | **Description**                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| name             | The name of the call destination. E.g. “Argentina” or “Argentina mobile” etc.                                                                                                                                                                                                                                                                                                                                                                                     |
+| country          | The call destination [country](#country_iso_desc)                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| country\_name    | The call destination country name                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| currency         | [Currency](#currency_iso_desc) in which the price is reported                                                                                                                                                                                                                                                                                                                                                                                                     |
+| per\_call\_fee   | The per call fee applicable for calling to this destination. This fee is also sometimes called the call setup fee/charge and is a fixed fee that is charged when a call is successfully connected. Up to 3 [decimals](#decimal_values_desc)                                                                                                                                                                                                                       |
+| usage\_fee       | The usage fee for time of the call, applicable for calling to this destination. Up to 3 [decimals](#decimal_values_desc)                                                                                                                                                                                                                                                                                                                                          |
+| charge\_interval | The charge interval for the usage fee in seconds for calls to the destination. This is usually 60 secondss, which implies that the call is billed in increments of 1 minute.                                                                                                                                                                                                                                                                                      |
+| dialcode\_list   | A comma separated list of prefix dial codes for this destination. It is the destination within the country that has the longest matching dialcode – compared with dialed number - that defines the cost for calling the number                                                                                                                                                                                                                                    |
+
+The *LCR* shows the fallback plan for the Sonetel LCR for international phone calls in the form of a list of entries. Each entry in the LCR is the price to call a certain destination, in a certain currency and the priority order in which outbound carriers are tried in case of failure in connecting calls via a carrier.
+
+When a call is sent via a fallback carrier, Sonetel spends more money in connecting the call(in most cases) since the LCR priority order follows a least cost approach. The cost offset percentage, i.e. the percentage that Sonetel pays more over the primary carrier is also specified in the response.
+
+Certain destinations may not belong to a country, such as satellite phones from [Inmarsat](http://en.wikipedia.org/wiki/Inmarsat) or [iNUMs](http://en.wikipedia.org/wiki/INum_Initiative). In such cases, the country field is not relevant and is empty.
+
+The pricelist is available in 3 currencies. SEK, USD and Euro.
+
+Most destinations have a fixed per min fee for making calls. Some destinations may have a setup fee, which is a fixed fee charged when the call connects successfully.
+
+LCR is special in a way that it does not support a Show operation. Rather, only Search is supported.
+
+LCR can be searched using filters passed as query string parameters to the outboundcalls-price resource.
+
+The available filters are listed here.
+
+| **Filter** | **Description**                                                                                                                                                                                                                                                                                                                     |
+|------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| currency   | [Currency](#currency_iso_desc) in which the price is required                                                                                                                                                                                                                                                                       |
+| numbers    | The destination number(s) for which the LCR is required. This is a [multi-value](#multivalue_filter_desc) filter. The numbers are passed as comma separated values, e.g. *numbers=919112312345,46777889877*,. The acceptable format for the numbers is specified [here](http://www.sonetel.com/site/pmwiki.php?n=Admin.Call).       |
+
+## Fetch LCR [GET /globaldata/LCR{?currency,numbers}]
+The default response returns LCR with costs based on 
++ parameters
+    + currency: USD (optional) - The [currency](#currency_iso_desc) in which the price is needed.
+        + Default: USD
+    + numbers: 12342342345,919676331339 - The list of E164 numbers for which the LCR is needed
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+            "response":
+            [
+            {
+                "name" : "USA mobile",
+                "country" : "USA",
+                "country_name" : "United States",
+                "currency" : "USD",
+                "per_call_fee" : "0",
+                "usage_fee" : "0.008",
+                "charge_interval" : "60",
+                "dialcode_list" : "1234,1619,1776",
+                "lcr_priorities":
+                [
+                {
+                    "priority" : "1",
+                    "carrier" : "Net2phone",
+                    "cost_offset_percent" : "0.00"
+                },
+                {
+                    "priority" : "2",
+                    "carrier" : "Level3",
+                    "cost_offset_percent" : "16.65"
+                },
+                {
+                    "priority" : "1",
+                    "carrier" : "Telintel",
+                    "cost_offset_percent" : "21.43"
+                }
+                ]
+            },
+            {
+                "name" : "India mobile",
+                "country" : "IND",
+                "country_name" : "India",
+                "currency" : "USD",
+                "per_call_fee" : "0",
+                "usage_fee" : "0.014",
+                "charge_interval" : "60",
+                "dialcode_list" : "9196,919986",
+                "lcr_priorities":
+                [
+                {
+                    "priority" : "1",
+                    "carrier" : "Telaris",
+                    "cost_offset_percent" : "0.00"
+                },
+                {
+                    "priority" : "2",
+                    "carrier" : "Net2phone",
+                    "cost_offset_percent" : "56.00"
+                },
+                {
+                    "priority" : "1",
+                    "carrier" : "Level3",
+                    "cost_offset_percent" : "250.00"
+                }
+                ]
+            }
+            ],
+            "status":"success",
+            "resource":"country"
+            }
+
 ## Group country
 The *country* resource represents standard details of a country such as the [telephone country code](#tel_country_code_desc), the [ISO country code](#country_iso_desc) etc.
 It also includes phone number coverage and pricing per country.
@@ -946,6 +1058,8 @@ If states is returned, you can then use the numberstocksummary API to retrieve t
     + Body
 
             
+
+
 
 ## Group SomeGroup
 
